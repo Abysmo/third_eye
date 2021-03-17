@@ -7,6 +7,9 @@ pip3 install playsound
 from PIL import ImageGrab
 from PIL import Image
 from time import sleep
+import numpy
+import time
+import io
 import cv2
 import playsound
 import signal
@@ -26,35 +29,39 @@ x2 = 702
 y1 = 675
 y2 = 1000
 
-#Images PATH
-img_out_raw = 'sc.png'
+#variables
+save_images = False
+img_out_raw = 'img_raw.png'
 img_out = 'img_processed.bmp'
 alarm_sound = 'alarm2.mp3'
 
+
 def sigint_handler(sig, frame):
     try:
-        i = input("Execution suspended, press Enter to resume or Ctrl+D to exit")
+        i = input("Execution suspended, press Enter to resume or Ctrl+C to exit")
     except:
         sys.exit()
     print("Resumed.")
 
 signal.signal(signal.SIGINT, sigint_handler)
-print("Third eye online")
+print("Third eye online. Ctrl+C for suspend.")
 while(True):
     cycle_time = 1
     image = ImageGrab.grab(bbox=(x1,y1,x2,y2))
-    image.save(img_out_raw)
 
-    image = cv2.imread(img_out_raw, cv2.IMREAD_GRAYSCALE)
+    image = cv2.cvtColor(numpy.array(image), cv2.COLOR_BGR2GRAY)
+    if save_images: #save image if enabled
+        cv2.imwrite(img_out_raw,image) 
+    
     ret,image = cv2.threshold(image, 230, 255, cv2.THRESH_BINARY)
-    cv2.imwrite(img_out,image)
+    if save_images: #save image if enabled
+        cv2.imwrite(img_out,image)
 
-    in_file = open(img_out, "rb") # opening for [r]eading as [b]inary
-    data = in_file.read()
-    in_file.close()
+    ret,buffer = cv2.imencode(".bmp", image)
+    bmp_image_buffer = io.BytesIO(buffer).read()
 
-    if b_pattern in data:
-        print("Neut found!")
+    if b_pattern in bmp_image_buffer:
+        print(time.strftime("[%H:%M:%S]") + "Neut found!")
         playsound.playsound(alarm_sound)
         cycle_time = 5
     sleep(cycle_time)
