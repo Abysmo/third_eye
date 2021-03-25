@@ -5,13 +5,13 @@ Relevant for null-sec caribers and others.
 
 Main work principle based on capturing(via screenshot) small screen fragments and processing it with openCV library.
 
-**Python libraries what needed :*
-
+**Python libraries required :**
 ***
-pip3 install pillow
-pip3 install opencv-python
-pip3 install playsound
-pip3 install win32gui
-pip3 install keyboard
-*
+>pip3 install pillow  
+>pip3 install opencv-python  
+>pip3 install playsound  
+>pip3 install win32gui  
+>pip3 install keyboard  
+
+
 
