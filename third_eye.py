@@ -6,6 +6,7 @@ pip3 install pillow
 pip3 install opencv-python
 pip3 install playsound
 pip3 install win32gui
+pip3 install keyboard
 """
 
 from PIL import ImageGrab
@@ -21,6 +22,7 @@ import signal
 import sys
 import threading
 import win32gui
+import keyboard
 
 #match as "=" in 10xN px. screenshot
 pattern = [0xff,0xff,0xff,0xff,0xff,
@@ -31,8 +33,17 @@ pattern = [0xff,0xff,0xff,0xff,0xff,
            0xff,0xff,0xff,0xff]
 b_pattern = bytes(pattern)
 
+'''
+#screenshot params
+
+(x2-x1 diff should be == 10px) it maches with pattern above.
+If diff x2-x1 is changed - match pattern should be updated.
+For convenience debug param save_img_bin_dump is added. 
+It it set as True - script saves bitmap hex dump near itself,
+it can be analysed manually with hex editor to find desired pattern
+
+'''
 screenshot_params = {
-#screenshot params (x1-x2 diff should be == 10px)
 'scr_x1' : int(),
 'scr_x2' : int(),
 'scr_y1' : int(),
@@ -48,6 +59,8 @@ settings = {
 'notification_sound' : 'audio/notification2.mp3',
 'is_running' : True,
 'alarm_repeat' : True,
+'scr_rect_highlight' : False,
+'scr_rect_blinkrate' : 5,
 'alarm_repeat_time' : 5,
 'image_ref_rate' : 1,
 'bmp_image_buffer_prev' : bytes(),
@@ -55,6 +68,11 @@ settings = {
 'global_lock' : threading.Lock(),
 'sound_lock' : threading.Lock(),
 'eve_win_hwnd' : int(),
+#eve screen
+'x1' : int(),
+'y1' : int(),
+'x2' : int(),
+'y2' : int(),
 #debug settings
 'save_images' : False,
 'save_img_bin_dump' : False
@@ -145,7 +163,10 @@ settings[alarm_repeat] = {settings['alarm_repeat']}\n\
 settings[alarm_repeat_time] = {settings['alarm_repeat_time']}\n\
 settings[image_ref_rate] = {settings['image_ref_rate']}\n\
 settings[eve_win_hwnd] = {settings['eve_win_hwnd']} : {win32gui.GetWindowText(settings['eve_win_hwnd'])}\n\
-")
+settings['x1'] = {settings['x1']}\n\
+settings['y1'] = {settings['y1']}\n\
+settings['x2'] = {settings['x2']}\n\
+settings['y2'] = {settings['y2']}")
 
 def print_usage():
     print("\
@@ -154,10 +175,12 @@ w - change eve window\n\
 u - print usage\n\
 v - print settings\n\
 r [xx] - set alarm repeat (0 - repeat off)\n\
+t - setup standings segment\n\
 E - exit script\n\
 ")
 
-def command_processing(settings):
+def t_command_processing(settings, screenshot_params):
+    global threads
     print(time.strftime("[%H:%M:%S]") + "Third eye online.")
     print_usage()
     while True:
@@ -179,6 +202,8 @@ def command_processing(settings):
             os._exit(0)
         elif cmd[0] == 'w':
             select_eve_window(settings)
+        elif cmd[0] == 't':
+            setup_scr_zone(settings, screenshot_params)
         elif cmd[0] == 'r':
             try:
                 cmd_val = cmd.split("r ")[1]
@@ -206,20 +231,65 @@ def select_eve_window(settings):
         win_num = input("select window or hit Enter to refresh: ")
         if win_num:
             settings['eve_win_hwnd'] = eve_win_list[int(win_num[0])]
+            (settings['x1'],
+            settings['y1'],
+            settings['x2'],
+            settings['y2']) = win32gui.GetWindowRect(settings['eve_win_hwnd'])
             return
 
-def highlight_scr_zone(settings, screenshot_params):
+def t_highlight_scr_zone(settings, screenshot_params):
     win_dc = win32gui.GetDC(settings['eve_win_hwnd'])
+    blink_val = 1 / settings['scr_rect_blinkrate']
     while True:
-        #draw rect bit larger than actual size 
-        #to prevent highlight frame captured in screen
-        win32gui.DrawFocusRect(win_dc,\
-        (screenshot_params['scr_x1']-1, \
-        screenshot_params['scr_y1']-1, \
-        screenshot_params['scr_x2']+1, \
-        screenshot_params['scr_y2']+1))
-        time.sleep(0.3)
+        while settings['scr_rect_highlight']:
+            #draw rect bit larger than actual size 
+            #to prevent highlight frame captured in screen
+            win32gui.DrawFocusRect(win_dc,\
+            (screenshot_params['scr_x1']-1, \
+            screenshot_params['scr_y1']-1, \
+            screenshot_params['scr_x2']+1, \
+            screenshot_params['scr_y2']+1))
+            time.sleep(blink_val)
+            continue
+        time.sleep(2)
 
+def setup_scr_zone(settings, screenshot_params):
+    print('Setup standings zone in eve window.\n\
+Use Numpad + and - for zone resize\n\
+Use Arrows for zone moving\n\
+Press Enter for finish setup')
+    settings['global_lock'].acquire()
+    settings['scr_rect_highlight'] = True #unblock highlight thread
+    while True:
+        k = keyboard.read_event(suppress=True)
+        if k.name == "up":
+            if screenshot_params['scr_y1'] - 1 > settings['y1']:
+                screenshot_params['scr_y1'] -= 1
+                screenshot_params['scr_y2'] -= 1
+        elif k.name == "down":
+            if screenshot_params['scr_y2'] + 1 < settings['y2']:
+                screenshot_params['scr_y1'] += 1
+                screenshot_params['scr_y2'] += 1
+        elif k.name == "left":
+            if screenshot_params['scr_x1'] - 1 > settings['x1']:
+                screenshot_params['scr_x1'] -= 1
+                screenshot_params['scr_x2'] -= 1
+        elif k.name == "right":
+            if screenshot_params['scr_x2'] + 1 < settings['x2']:
+                screenshot_params['scr_x1'] += 1
+                screenshot_params['scr_x2'] += 1
+        elif k.name == "+":
+            if screenshot_params['scr_y1'] - 3 > settings['y1']:
+                screenshot_params['scr_y1'] -= 3
+        elif k.name == "-":
+            if screenshot_params['scr_y2'] - screenshot_params['scr_y1'] > 30:
+                screenshot_params['scr_y1'] += 3
+        elif k.name == "enter" and k.event_type == 'up':
+            print('Standings zone setup complete.')
+            settings['global_lock'].release()
+            settings['scr_rect_highlight'] = False #lock highlight thread
+            return
+        
 
 
 ###############-MAIN-###############
@@ -229,8 +299,8 @@ threads = {
 'cn' : threading.Thread(target=check_neutrals, args=(settings, )),
 'cb' : threading.Thread(target=check_local_boost, args=(settings, )),
 'ic' : threading.Thread(target=image_capture, args=(settings, )),
-'cp' : threading.Thread(target=command_processing, args=(settings, )),
-'hz' : threading.Thread(target=highlight_scr_zone, args=(settings, screenshot_params))
+'cp' : threading.Thread(target=t_command_processing, args=(settings, screenshot_params)),
+'hz' : threading.Thread(target=t_highlight_scr_zone, args=(settings, screenshot_params)),
 }
 
 
@@ -247,7 +317,8 @@ threads['cn'].start()
 threads['cb'].start()
 threads['ic'].start()
 threads['cp'].start()
-#threads['hz'].start()
+threads['hz'].start()
+
 
 #do nothing in main cycle, let threads have fun.
 while True:
