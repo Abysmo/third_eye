@@ -147,7 +147,6 @@ settings[image_ref_rate] = {settings['image_ref_rate']}\n\
 settings[eve_win_hwnd] = {settings['eve_win_hwnd']} : {win32gui.GetWindowText(settings['eve_win_hwnd'])}\n\
 ")
 
-#TODO: make alarm repeat and time
 def print_usage():
     print("\
 s - start\stop script\n\
@@ -199,7 +198,6 @@ def get_eve_win_list(hwnd, win_list):
 
 def select_eve_window(settings):
     eve_win_list = list()
-    settings['global_lock'].acquire()
     while True:
         win32gui.EnumWindows(get_eve_win_list, eve_win_list)
         if len(eve_win_list):
@@ -208,7 +206,6 @@ def select_eve_window(settings):
         win_num = input("select window or hit Enter to refresh: ")
         if win_num:
             settings['eve_win_hwnd'] = eve_win_list[int(win_num[0])]
-            settings['global_lock'].release()
             return
 
 def highlight_scr_zone(settings, screenshot_params):
