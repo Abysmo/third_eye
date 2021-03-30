@@ -8,6 +8,7 @@ pip3 install keyboard
 
 from PIL import ImageGrab
 from PIL import Image
+from distutils.util import strtobool
 import numpy
 import os
 import copy
@@ -340,7 +341,7 @@ def read_settings(settings, screenshot_params):
         settings['scr_rect_blinkrate'] = int(sav_list[0])
         settings['alarm_repeat_time'] = int(sav_list[1])
         settings['image_ref_rate'] = int(sav_list[2])
-        settings['save_event_log'] = bool(distutils.util.strtobool(sav_list[3]))
+        settings['save_event_log'] = bool(strtobool(sav_list[3].rstrip('\n')))
         screenshot_params['scr_x1'] = int(sav_list[4])
         screenshot_params['scr_x2'] = int(sav_list[5])
         screenshot_params['scr_y1'] = int(sav_list[6])
