@@ -165,9 +165,9 @@ settings[save_event_log] = {settings['save_event_log']}\n\
 settings[eve_win_hwnd] = {settings['eve_win_hwnd']} : {win32gui.GetWindowText(settings['eve_win_hwnd'])}\n\
 Screenshot zone param :\n\
 screenshot_params['scr_x1'] = {screenshot_params['scr_x1']}\n\
-screenshot_params['scr_x1'] = {screenshot_params['scr_y1']}\n\
-screenshot_params['scr_x1'] = {screenshot_params['scr_x2']}\n\
-screenshot_params['scr_x1'] = {screenshot_params['scr_y2']}\n\
+screenshot_params['scr_y1'] = {screenshot_params['scr_y1']}\n\
+screenshot_params['scr_x2'] = {screenshot_params['scr_x2']}\n\
+screenshot_params['scr_y2'] = {screenshot_params['scr_y2']}\n\
 EVE window param :\n\
 settings['x1'] = {settings['x1']}\n\
 settings['y1'] = {settings['y1']}\n\
@@ -308,7 +308,7 @@ Press Enter for finish setup')
         elif k.name == "-":
             if screenshot_params['scr_y2'] - screenshot_params['scr_y1'] > 30:
                 screenshot_params['scr_y1'] += 3
-        elif k.name == "enter" and k.event_type == 'up':
+        elif k.name == "enter" and k.event_type == 'down':
             print('Standings zone setup complete.')
             settings['global_lock'].release()
             settings['scr_rect_highlight'] = False #lock highlight thread
