@@ -62,8 +62,8 @@ settings = {
 's_file' : 'user.settings',
 'img_out_raw' : 'img_raw.png',
 'img_out' : 'img_processed.bmp',
-'alarm_sound' : 'audio/alarm2.mp3',
-'notification_sound' : 'audio/notification2.mp3',
+'alarm_sound' : 'audio/notification2.mp3',
+'notification_sound' : 'audio/popup.wav',
 #eve screen
 'x1' : int(),
 'y1' : int(),
