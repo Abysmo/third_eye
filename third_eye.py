@@ -250,7 +250,7 @@ def select_eve_window(settings):
             for i in eve_win_list:
                 print(f"window [{eve_win_list.index(i)}] : [{win32gui.GetWindowText(i)}]")
         win_num = input("select window or hit Enter to refresh: ")
-        if win_num and win_num >= 0 and win_num < len(eve_win_list):
+        if win_num and int(win_num) >= 0 and int(win_num) < len(eve_win_list):
             settings['eve_win_hwnd'] = eve_win_list[int(win_num[0])]
             win32gui.ShowWindow(settings['eve_win_hwnd'], 1) #activeate window to get it size
             (settings['x1'],
