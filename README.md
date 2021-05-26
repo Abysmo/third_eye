@@ -18,7 +18,7 @@ Main work principle based on capturing(via screenshot) small screen fragments an
 - install libraries above. Just copy\paste it in terminal line by line after you install python.
 - Run EvE. Log in into your account.
 - Run script and select active window
-- press "t" then "enter" to select position of standing segment in local chat. You can resize it within Y axis only. When desired position should be set - press enter to finalize settings.
+- press "t" then "enter" to select position of standing segment in local chat. You can resize it within Y axis only. When desired position is set - press enter to finalize settings.
 
 ![window_select](/img/1.jpg)
 
