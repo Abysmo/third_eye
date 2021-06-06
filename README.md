@@ -1,4 +1,4 @@
-# Third eye script v0.3b
+# Third eye script v0.4
 
 This script is used to check standings segment from local chat in EVE Online for presence of neutral players and sound alarm if they found. Also it notifies about "boost local" events.
 Relevant for null-sec caribers and others.

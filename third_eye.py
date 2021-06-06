@@ -58,6 +58,7 @@ settings = {
 'sound_lock' : threading.Lock(),
 'eve_win_hwnd' : int(),
 'scr_rect_blinkrate' : 5,
+'boost_threshold_px' : 5,
 #files
 's_file' : 'user.settings',
 'img_out_raw' : 'img_raw.png',
@@ -85,7 +86,7 @@ def t_check_local_boost(settings):
         val1 = settings['bmp_image_buffer'].count(0xff)
         val2 = settings['bmp_image_buffer_prev'].count(0xff)
         settings['global_lock'].release()
-        if val1 > val2:
+        if (val1 - val2) > settings['boost_threshold_px']:
             print(time.strftime("[%H:%M:%S]") + "Local boosted")
             settings['sound_lock'].acquire()
             playsound.playsound(settings['notification_sound'])
